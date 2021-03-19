@@ -10,16 +10,18 @@ class Task2Spider(scrapy.Spider):
 
     def parse(self, response):
         start_url = 'http://www.irbis-nbuv.gov.ua'
-        book_image = response.css("table tr td table tr td table a img::attr('src')").extract()
+        book_url = []
         book_name = []
-        for b in response.css("table.advanced tr td table tr td p"):
-            name = b.css("::text").extract_first()
-            if name != None and name != "Додаткові відомості та надходження":
-                book_name.append(b.css("::text").extract_first())
-        for i in range(len(book_image)):
-            book_image[i] = start_url + book_image[i]
-        for i in range(len(book_image)):
+        block = response.css('table.advanced tr td table')
+        for item in block:
+            book_url.append(item.css("tr td a img::attr('src')").get())
+            book_name.append(item.css("tr td p::text").get())
+        for i in range(len(book_url)):
+            if book_url[i] !=None:
+                book_url[i] = start_url + book_url[i]
+            else:pass
+        for i in range(len(book_url)):
             book = BookItem()
-            book["url"] = book_image[i]
+            book["url"] = book_url[i]
             book["name"] = book_name[i]
             yield book
